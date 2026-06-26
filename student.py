@@ -5,7 +5,7 @@ Created on Fri Jun 26 10:52:50 2026
 @author: tom
 """
 
-import Workshop as ws
+import workshop as ws
 
 class Student:
     def __init__(self, firstname: str, lastname: str, year: int):
@@ -27,8 +27,11 @@ class Student:
         """
         self.firstname = firstname
         self.lastname = lastname
-        self.workshops = []
+        # the final workshops they will visit
+        self.workshops: list[ws.Workshop] = [] 
         self.year = year
+        # the workshops they want to visit
+        # these should be ordered as first one is fav.
         self.preferences: list[ws.Workshop] = []
         
     def __str__(self):
@@ -45,9 +48,12 @@ class Student:
     def assignWorkshop(self, workshop):
         if workshop not in self.workshops:
             self.workshops.append(workshop)
+            workshop.addStudent(self)
         else:
             # should throw some kind of error here
-            pass
+            print(
+                "Error: student already has this workshop: {0}"
+                .format(workshop.getName()))
         
     def getWorkshopNames(self):
         return [ws.name if not ws is None else "" for ws in self.workshops.values()]
