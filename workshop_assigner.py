@@ -8,18 +8,20 @@ Created on Fri Jun 26 11:05:26 2026
 import os
 import FileIO
 
-NUM_WORKSHOPS = 3 # how many workshops should each student visit
+NUM_SLOTS = 3 # how many workshops should each student visit
 
 def assignYearGroup(students, unassigned):
     for s in students:
         # loop through and try brute force assignment of workshops to students 
+        slot_counter = 0
         for p in s.preferences:
-            if len(s.getWorkshops()) == NUM_WORKSHOPS:
+            if len(s.getWorkshops()) == NUM_SLOTS:
                 break
-            if not p.isFull():
-                s.assignWorkshop(p)
-        if len(s.getWorkshops()) < NUM_WORKSHOPS:
-            # we have a problem, they have less than 3 assigned
+            if not p.isSlotFull(slot_counter):
+                s.assignWorkshop(p, slot_counter)
+                slot_counter += 1
+        if len(s.getWorkshops()) < NUM_SLOTS:
+            # we have a problem, they have less than NUM_SLOTS assigned
             print("Error, student missing workshop")
             unassigned.append(s)
 
@@ -45,7 +47,7 @@ def assignWorkshops(workshops, students):
 
 def main():
     data_dir = os.path.join(os.getcwd(), 'test_data')
-    preferenceFile = os.path.join(data_dir, 'preferences_data.xlsx')
+    preferenceFile = os.path.join(data_dir, 'Workshop_Wuensche_Beispieldaten.xlsx')
     workshopsFile = os.path.join(data_dir, 'workshop_data.xlsx')
     studentFileOut = os.path.join(data_dir, 'test_students_1.xlsx')
     workshopsFileOut = os.path.join(data_dir, 'test_workshops_1.xlsx')
@@ -53,15 +55,15 @@ def main():
     fileIO = FileIO.FileIO(
         preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
     # read in the student preferences and workshop names
-    workshops = fileIO.initialiseWorkshops()
+    workshops = fileIO.initialiseWorkshops(NUM_SLOTS)
     students = fileIO.initialisePreferences(workshops)
     
     # this is where the magic happens
     assignWorkshops(workshops, students)
     
     # output data
-    fileIO.writeWorkshops(workshops)
-    fileIO.writeStudents(students, NUM_WORKSHOPS)
+    fileIO.writeWorkshops(workshops, NUM_SLOTS)
+    fileIO.writeStudents(students)
     
 if __name__ == '__main__':
     main()

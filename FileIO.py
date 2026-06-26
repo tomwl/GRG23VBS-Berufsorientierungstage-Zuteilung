@@ -18,12 +18,13 @@ class FileIO:
         self.studentsFileOut = sFout
         self.workshopsFileOut = wFout
         
-    def initialiseWorkshops(self):
+    def initialiseWorkshops(self, n_slots):
         workshops = pd.read_excel(self.workshopsFileIn, keep_default_na=False)
         result = []
         for index, row in workshops.iterrows():  
             result.append(ws.Workshop(row["Name"], 
-                                      int(row["Capacity"])))
+                                      int(row["Capacity"]),
+                                      n_slots))
         return result
     
     def initialisePreferences(self, workshops):
@@ -48,7 +49,7 @@ class FileIO:
             students.append(s)
         return students
     
-    def writeWorkshops(self, workshops):
+    def writeWorkshops(self, workshops, slots):
         """Given a list of workshops with students assigned, write this information
         to a file
 
@@ -62,18 +63,23 @@ class FileIO:
         None.
 
         """
-        data = []
-        for w in workshops:
-            wname = w.name
-            students = w.getStudents()
-            for s in students:
-                data.append([wname, s.getName(), str(s.year)])
-        df = pd.DataFrame(data, columns=['Workshop', 'Student Name', 'Class'])
+        df = []
+        for i in range(slots):
+            df.append(None)
+        for i in range(slots):
+            data = []
+            for w in workshops:
+                wname = w.name
+                students = w.getStudentsInSlot(i)
+                for s in students:
+                    data.append([wname, s.getName(), str(s.year)])
+            df[i] = pd.DataFrame(data, columns=['Workshop', 'Student Name', 'Class'])
         
-        with pd.ExcelWriter(self.workshopsFileOut) as writer:  
-            df.to_excel(writer, sheet_name='results', index=False)
+        with pd.ExcelWriter(self.workshopsFileOut) as writer:
+            for i in range(slots):
+                df[i].to_excel(writer, sheet_name=str(i), index=False)
             
-    def writeStudents(self, students, num_workshops):
+    def writeStudents(self, students):
         """Given a list of forms, containing students to whom workshops have
         been assigned, write this information to file
 
@@ -91,7 +97,7 @@ class FileIO:
         for s in students:
             data.append([s.getName(), str(s.year)] + s.getWorkshopNames())
         df = pd.DataFrame(data, 
-                          columns=['Student Name', 'Class', 'Workshop 1', 'Workshop 2', 'Workshop 3'])
+                          columns=['Student Name', 'Class', 'Slot 1', 'Slot 2', 'Slot 3'])
         with pd.ExcelWriter(self.studentsFileOut) as writer:  
             df.to_excel(writer, index=False)
         

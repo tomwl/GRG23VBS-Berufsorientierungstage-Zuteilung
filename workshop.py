@@ -6,7 +6,7 @@ Created on Fri Jun 26 11:08:37 2026
 """
 
 class Workshop:
-    def __init__(self, name: str, capacity: int):
+    def __init__(self, name: str, capacity: int, num_slots: int):
         """Constructor for Workshop
 
         Parameters
@@ -22,33 +22,40 @@ class Workshop:
 
         """
         self._name = name
-        self.students = []
+        self.students = {}
         self.capacity = capacity
+        self.n_slots = num_slots
         
     def __str__(self):
-        result = "{0}: \n".format(self.name)
-        for s in self.getStudents():
-            result += str(s) + "\n"
-        return result
+        result = "Name: {0}, \n".format(
+            self.name)
+        for i in range(self.n_slots):
+            tmp = "Slot {0}: {1} students\n".format(i, len(self.students[i]))
+            for s in self.students[i]:
+                tmp += "{}\n".format(s)
+            result += tmp
+        return result 
     
     @property
     def name(self):
         return str(self._name)
     
     def resetStudents(self):
-        self.students = []
+        for i in range(self.n_slots):
+            self.students[i] = []
         
-    def getStudents(self):
-        return self.students
+    def getStudentsInSlot(self, slot):
+        return self.students[slot]
         
-    def isFull(self):
-        return len(self.students) >= self.capacity
+    def isSlotFull(self, slot):
+        return len(self.students[slot]) >= self.capacity
     
-    def addStudent(self, student):
-        if student not in self.students:
-            self.students.append(student)
+    def addStudent(self, student, slot):
+        allStudents = [item for sublist in self.students.values() for item in sublist]
+        if student not in allStudents:
+            self.students[slot].append(student)
         else:
             # should throw some kind of error here
-            print(
-                "Error: workshop already has this student: {0}"
-                .format(student.getName()))
+            raise Exception("Error: workshop already has this student: {0}"
+                            .format(student.getName()))
+            

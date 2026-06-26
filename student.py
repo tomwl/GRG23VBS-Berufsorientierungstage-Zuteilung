@@ -45,15 +45,14 @@ class Student:
         if not preference is None:
             self.preferences.append(preference)
     
-    def assignWorkshop(self, workshop):
+    def assignWorkshop(self, workshop, slot):
         if workshop not in self.workshops:
             self.workshops.append(workshop)
-            workshop.addStudent(self)
+            workshop.addStudent(self, slot)
         else:
             # should throw some kind of error here
-            print(
-                "Error: student already has this workshop: {0}"
-                .format(workshop.getName()))
+            raise Exception("Error: student already has this workshop: {0}"
+                            .format(workshop.getName()))
         
     def getWorkshopNames(self):
         return [ws.name if not ws is None else "" for ws in self.workshops]
