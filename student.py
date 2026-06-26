@@ -56,7 +56,7 @@ class Student:
                 .format(workshop.getName()))
         
     def getWorkshopNames(self):
-        return [ws.name if not ws is None else "" for ws in self.workshops.values()]
+        return [ws.name if not ws is None else "" for ws in self.workshops]
     
     def getWorkshops(self):
         return self.workshops

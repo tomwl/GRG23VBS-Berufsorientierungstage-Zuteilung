@@ -5,11 +5,10 @@ Created on Fri Jun 26 11:05:26 2026
 @author: tom
 """
 
+import os
 import FileIO
-import student
-import workshop
 
-NUM_WORKSHOPS = 1 # how many workshops should each student visit
+NUM_WORKSHOPS = 3 # how many workshops should each student visit
 
 def assignYearGroup(students, unassigned):
     for s in students:
@@ -45,12 +44,24 @@ def assignWorkshops(workshops, students):
     
 
 def main():
+    data_dir = os.path.join(os.getcwd(), 'test_data')
+    preferenceFile = os.path.join(data_dir, 'preferences_data.xlsx')
+    workshopsFile = os.path.join(data_dir, 'workshop_data.xlsx')
+    studentFileOut = os.path.join(data_dir, 'test_students_1.xlsx')
+    workshopsFileOut = os.path.join(data_dir, 'test_workshops_1.xlsx')
+    
+    fileIO = FileIO.FileIO(
+        preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
     # read in the student preferences and workshop names
+    workshops = fileIO.initialiseWorkshops()
+    students = fileIO.initialisePreferences(workshops)
     
     # this is where the magic happens
     assignWorkshops(workshops, students)
     
     # output data
+    fileIO.writeWorkshops(workshops)
+    fileIO.writeStudents(students, NUM_WORKSHOPS)
     
 if __name__ == '__main__':
     main()
