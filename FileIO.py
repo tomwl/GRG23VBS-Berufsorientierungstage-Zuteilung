@@ -6,9 +6,6 @@ Created on Fri Jun 26 11:16:22 2026
 """
 
 import pandas as pd
-#import workshop as ws
-#from student import Student
-from dataclasses import dataclass
 import re
 from pathlib import Path
 
@@ -20,7 +17,12 @@ class FileIO:
         self.workshopsFileOut = wFout
 
 
-def readRawMSData(fileInputPath: Path, fileOutputPath:Path, nameIndex: int, yearIndex: int, preferencesIndex: int ):
+def processMSFormsData(
+        fileInputPath: Path, 
+        fileOutputPath:Path, 
+        nameIndex: int, 
+        yearIndex: int, 
+        preferencesIndex: int ):
     
     data = pd.read_excel(fileInputPath, keep_default_na=False)
     data = data.drop_duplicates(subset=[data.columns[nameIndex]], keep='last')
@@ -55,12 +57,14 @@ def readRawMSData(fileInputPath: Path, fileOutputPath:Path, nameIndex: int, year
         print(f"ValueError: writing failed! {e}")
         
         
-        
-readRawMSData(
-    fileInputPath=Path("test_data/MS Forms/users.xlsx"),
-    fileOutputPath=Path("output/user_test_data_output.xlsx"),
-    nameIndex=4,
-    yearIndex=8,
-    preferencesIndex=11
-)
-        
+def main():      
+    processMSFormsData(
+        fileInputPath=Path("test_data/MS Forms/users.xlsx"),
+        fileOutputPath=Path("output/user_test_data_output.xlsx"),
+        nameIndex=4,
+        yearIndex=8,
+        preferencesIndex=11
+    )
+            
+if __name__ == '__main__':
+    main()
