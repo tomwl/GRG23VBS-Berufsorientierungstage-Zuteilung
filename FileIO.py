@@ -27,7 +27,7 @@ class FileIO:
                                       n_slots))
         return result
     
-    def initialisePreferences(self, workshops):
+    def initialisePreferences(self, workshops, n_slots):
         preferences = pd.read_excel(self.prefencesFileIn, keep_default_na=False)
         students = []
         for index, row in preferences.iterrows():
@@ -36,7 +36,7 @@ class FileIO:
             year = row["Klasse"]
             if not year:
                 raise Exception("Student has no year")
-            s = student.Student(firstname, lastname, year)
+            s = student.Student(firstname, lastname, year, n_slots)
             # find and allocate preferences from workshop list
             for i in range(1, 11):
                 preference_i = row["Wunsch " + str(i)]

@@ -50,7 +50,7 @@ class Workshop:
     def isSlotFull(self, slot):
         return len(self.students[slot]) >= self.capacity
     
-    def addStudent(self, student, slot):
+    def addStudentToSlot(self, student, slot):
         allStudents = [item for sublist in self.students.values() for item in sublist]
         if student not in allStudents:
             self.students[slot].append(student)
@@ -58,4 +58,9 @@ class Workshop:
             # should throw some kind of error here
             raise Exception("Error: workshop already has this student: {0}"
                             .format(student.getName()))
+            
+    def removeStudentFromSlot(self, student, slot):
+        if student not in self.getStudentsInSlot(slot):
+            raise Exception("Error: student not in this workshop slot")
+        self.students[slot].remove(student)
             
