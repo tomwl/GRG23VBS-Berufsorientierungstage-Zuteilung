@@ -15,6 +15,13 @@ NUM_OPTIMISATIONS = 10000 # how many iterations to do when optimising allocation
 
 # ToDo: May have to add code to assign less popular workshops first
 
+def checkEigthYearsHaveTopThreeChoices(students):
+    for s in students:
+        if s.year == 8:
+            if not set(s.workshops) == set(s.preferences[:3]):
+                return False
+    return True
+
 def printNumberOfPeopleInWorkshops(workshops):
     for w in workshops:
         print(w.name)
@@ -62,6 +69,8 @@ def assignWorkshops(workshops, students):
     assignYearGroup(target_students, unassignedStudents)
     
     printNumberOfPeopleInWorkshops(workshops)
+    print("All 8th years have top 3 choices: {0}"
+          .format(checkEigthYearsHaveTopThreeChoices(students)))
     
     #calculate total unhappiness before optimisation
     unhappiness = sum(s.unhappiness_score() for s in students)
@@ -70,15 +79,16 @@ def assignWorkshops(workshops, students):
     # try to do some swapping to make people a bit happier
     counter = 0
     improvements_counter = 0
+    seventh_year_students = [x for x in students if x.year == 7]
     while counter <= NUM_OPTIMISATIONS and unhappiness > UNHAPPINESS_TARGET_SCORE:
         counter += 1
         # total unhappiness
         unhappiness = sum(s.unhappiness_score() for s in students)
         # randomly select from unhappy students, weighted by unhappiness
-        weights = [s.unhappiness_score() for s in students]
+        weights = [s.unhappiness_score() for s in seventh_year_students]
 
         unhappiest = random.choices(
-            students,
+            seventh_year_students,
             weights=weights,
             k=1
         )[0]
@@ -91,7 +101,7 @@ def assignWorkshops(workshops, students):
         # now find best student to swap workshops with
         best_student = None
         current_best_score = 0
-        for s in students:
+        for s in seventh_year_students:
             if s == unhappiest:
                 continue
             if workshop_to_swap in s.workshops:
@@ -132,6 +142,9 @@ def assignWorkshops(workshops, students):
     print(unhappiest.getWorkshopNames())
     for p in unhappiest.preferences:
         print(p.name)
+    print("All 8th years have top 3 choices: {0}"
+          .format(checkEigthYearsHaveTopThreeChoices(students)))
+    
     
 
 def main():
