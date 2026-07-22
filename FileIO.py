@@ -31,12 +31,11 @@ class FileIO:
         preferences = pd.read_excel(self.prefencesFileIn, keep_default_na=False)
         students = []
         for index, row in preferences.iterrows():
-            firstname = row["Vorname"]
-            lastname = row["Nachname"]
+            name = row["Name"]
             year = row["Klasse"]
             if not year:
                 raise Exception("Student has no year")
-            s = student.Student(firstname, lastname, year, n_slots)
+            s = student.Student(name, year, n_slots)
             # find and allocate preferences from workshop list
             for i in range(1, 11):
                 preference_i = row["Wunsch " + str(i)]
@@ -120,20 +119,18 @@ def processMSFormsData(
         
         studentPreferences = list()
         for w in preferences:  
-            n = re.sub(r"[\(\[].*?[\)\]]", "", w).strip()  # ← Raw string: r"..."
-            n = n.strip("...")
+            n = " ".join(w.split())
             studentPreferences.append(n) 
         
-        firstName = row.iloc[nameIndex].split(" ")[0]
-        lastName = row.iloc[nameIndex].split(" ")[1]
-        year = row.iloc[yearIndex]  
+        name = row.iloc[nameIndex].lower()
+        year = row.iloc[yearIndex][0]  # taking [0] so 7. Klasse --> 7
         
-        students.append([firstName, lastName, year] + studentPreferences)  
+        students.append([name, year] + studentPreferences)  
         
-    max_cols = max(len(student) for student in students) if students else 3
-    num_preferences = max_cols - 3 
+    max_cols = max(len(student) for student in students) if students else 2
+    num_preferences = max_cols - 2 
 
-    columns = ['Vorname', 'Nachname', 'Klasse'] + [f'Wunsch {i+1}' for i in range(num_preferences)]
+    columns = ['Name', 'Klasse'] + [f'Wunsch {i+1}' for i in range(num_preferences)]
 
     try:
         df = pd.DataFrame(students, columns=columns)
@@ -144,9 +141,10 @@ def processMSFormsData(
         
         
 def main():      
+    data_dir = Path.cwd() / "test_data"
     processMSFormsData(
-        fileInputPath=Path("test_data/MS Forms/Berufsorientierungs.xlsx"),
-        fileOutputPath=Path("test-data/user_test_data_output.xlsx"),
+        fileInputPath=data_dir / "MS Forms" / "Berufsorientierung-2.xlsx",
+        fileOutputPath=data_dir / "user_test_data_output.xlsx",
         nameIndex=4,
         yearIndex=6,
         preferencesIndex=7

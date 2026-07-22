@@ -5,7 +5,7 @@ Created on Fri Jun 26 11:05:26 2026
 @author: tom
 """
 
-import os
+from pathlib import Path
 import random
 import FileIO
 
@@ -148,11 +148,11 @@ def assignWorkshops(workshops, students):
     
 
 def main():
-    data_dir = os.path.join(os.getcwd(), 'test_data')
-    preferenceFile = os.path.join(data_dir, 'Workshop_Wuensche_160_Personen.xlsx')
-    workshopsFile = os.path.join(data_dir, 'workshop_data.xlsx')
-    studentFileOut = os.path.join(data_dir, 'test_students_1.xlsx')
-    workshopsFileOut = os.path.join(data_dir, 'test_workshops_1.xlsx')
+    data_dir = Path.cwd() / "test_data"
+    preferenceFile = data_dir / "user_test_data_output.xlsx"
+    workshopsFile = data_dir / "workshop_data.xlsx"
+    studentFileOut = data_dir / "test_students_2.xlsx"
+    workshopsFileOut = data_dir / "test_workshops_2.xlsx"
     
     fileIO = FileIO.FileIO(
         preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)

@@ -14,25 +14,24 @@ class Student:
         7: 25, 8: 40, 9: 80     # Heavily weighted values
     }
     
-    def __init__(self, firstname: str, lastname: str, year: int, nslots: int):
+    def __init__(self, name: str, year: int, nslots: int):
         """Constructor for Student
 
         Parameters
         ----------
-        firstname : str
-            student's first name.
-        lastname : str
-            student's last name.
+        name : str
+            student's name.
         year : int
             the year they are in e.g. 7 or 8
+        nslots: int
+            how many workshops the student should visit
 
         Returns
         -------
         None.
 
         """
-        self.firstname = firstname
-        self.lastname = lastname
+        self.name = name
         # the final workshops they will visit, these are ordered by slot
         # e.g. workshops[0] will be in the first slot etc.
         self.workshops: list[ws.Workshop] = []
@@ -44,11 +43,11 @@ class Student:
         self.preferences: list[ws.Workshop] = []
         
     def __str__(self):
-        return "{0} {1} in year {2}".format(
-            self.firstname, self.lastname, self.year)
+        return "{0} in year {1}".format(
+            self.name, self.year)
     
     def getName(self):
-        return "{0} {1}".format(self.firstname, self.lastname) 
+        return "{0}".format(self.name) 
     
     def resetWorkshops(self):
         for i in range(len(self.workshops)):
