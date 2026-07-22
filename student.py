@@ -105,3 +105,6 @@ class Student:
     
     def getLowestPreferenceWorkshop(self):
         return max(self.workshops, key=self.preferences.index, default = None)
+    
+    def checkWorkshopsAllDifferent(self):
+        return len(set(self.workshops)) == len(self.workshops)

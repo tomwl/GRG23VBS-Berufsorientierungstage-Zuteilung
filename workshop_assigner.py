@@ -17,9 +17,8 @@ NUM_OPTIMISATIONS = 10000 # how many iterations to do when optimising allocation
 
 def checkEigthYearsHaveTopThreeChoices(students):
     for s in students:
-        if s.year == 8:
-            if not set(s.workshops) == set(s.preferences[:3]):
-                return False
+        if s.year == 8 and not set(s.workshops) == set(s.preferences[:3]):
+            return False
     return True
 
 def printNumberOfPeopleInWorkshops(workshops):
@@ -74,7 +73,7 @@ def assignWorkshops(workshops, students):
     
     #calculate total unhappiness before optimisation
     unhappiness = sum(s.unhappiness_score() for s in students)
-    print(unhappiness)
+    print("Unhappiness before = ", unhappiness)
     
     # try to do some swapping to make people a bit happier
     counter = 0
@@ -135,24 +134,32 @@ def assignWorkshops(workshops, students):
             improvements_counter += 1
             
     #calculate total unhappiness, hopefully better now
-    print(sum(s.unhappiness_score() for s in students), improvements_counter)
+    print("Unhappiness after = ", sum(s.unhappiness_score() for s in students))
+    print("Number of improvements made = ", improvements_counter)
     
     # print the results for the unhappiest student                
-    unhappiest = max(students, key=lambda s: s.unhappiness_score())     
-    print(unhappiest.getWorkshopNames())
+    unhappiest = max(students, key=lambda s: s.unhappiness_score())  
+    print("Data for the unhappiest student: ")
+    print("Workshops assigned: ", unhappiest.getWorkshopNames())
+    print("Preferences were:")
     for p in unhappiest.preferences:
         print(p.name)
     print("All 8th years have top 3 choices: {0}"
           .format(checkEigthYearsHaveTopThreeChoices(students)))
     
-    
+    # some error checking at the end
+    for person in students:
+        if len(person.workshops) is not NUM_SLOTS:
+            raise RuntimeError("Student missing a workshop")
+        if not person.checkWorkshopsAllDifferent():
+            raise RuntimeError("Student has been assigned same workshop twice")
 
 def main():
     data_dir = Path.cwd() / "test_data"
-    preferenceFile = data_dir / "user_test_data_output.xlsx"
-    workshopsFile = data_dir / "workshop_data.xlsx"
-    studentFileOut = data_dir / "test_students_2.xlsx"
-    workshopsFileOut = data_dir / "test_workshops_2.xlsx"
+    preferenceFile = data_dir / "Workshop_Wuensche_160_Personen.xlsx"
+    workshopsFile = data_dir / "workshop_data-2.xlsx"
+    studentFileOut = data_dir / "test_students_1.xlsx"
+    workshopsFileOut = data_dir / "test_workshops_1.xlsx"
     
     fileIO = FileIO.FileIO(
         preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
