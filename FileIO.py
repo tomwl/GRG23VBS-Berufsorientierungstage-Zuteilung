@@ -33,10 +33,10 @@ class FileIO:
         students = []
         for index, row in preferences.iterrows():
             name = row["Name"]
-            year = row["Klasse"]
-            if not year:
-                raise Exception("Student has no year")
-            s = student.Student(name, year, n_slots)
+            form = row["Klasse"]
+            if not form:
+                raise Exception("Student has no form")
+            s = student.Student(name, form, n_slots)
             # find and allocate preferences from workshop list
             for i in range(1, 11):
                 preference_i = row["Wunsch " + str(i)]
@@ -72,7 +72,7 @@ class FileIO:
                 wname = w.name
                 students = w.getStudentsInSlot(i)
                 for s in students:
-                    data.append([wname, s.getName(), str(s.year)])
+                    data.append([wname, s.getName(), s.form])
             df[i] = pd.DataFrame(data, columns=['Workshop', 'Student Name', 'Class'])
         
         with pd.ExcelWriter(self.workshopsFileOut) as writer:
@@ -95,7 +95,7 @@ class FileIO:
         """
         data = []
         for s in students:
-            data.append([s.getName(), str(s.year)] + s.getWorkshopNames())
+            data.append([s.getName(), s.form] + s.getWorkshopNames())
         df = pd.DataFrame(data, 
                           columns=['Student Name', 'Class', 'Slot 1', 'Slot 2', 'Slot 3'])
         with pd.ExcelWriter(self.studentsFileOut) as writer:  
@@ -107,7 +107,7 @@ def processMSFormsData(
         fileInputPath: Path, 
         fileOutputPath:Path, 
         nameIndex: int, 
-        yearIndex: int, 
+        formIndex: int, 
         preferencesIndex: int ):
     
     data = pd.read_excel(fileInputPath, keep_default_na=False)
@@ -124,9 +124,9 @@ def processMSFormsData(
             studentPreferences.append(n) 
         
         name = row.iloc[nameIndex].lower()
-        year = row.iloc[yearIndex][0]  # taking [0] so 7. Klasse --> 7
+        form = row.iloc[formIndex]  
         
-        students.append([name, year] + studentPreferences)  
+        students.append([name, form] + studentPreferences)  
         
     max_cols = max(len(student) for student in students) if students else 2
     num_preferences = max_cols - 2 
@@ -204,18 +204,18 @@ def findMissingStudents(
         
 def main():      
     data_dir = Path.cwd() / "test_data"
-    """processMSFormsData(
-        fileInputPath=data_dir / "MS Forms" / "Berufsorientierung-2.xlsx",
+    processMSFormsData(
+        fileInputPath=data_dir / "MS Forms" / "Berufsorientierung-3.xlsx",
         fileOutputPath=data_dir / "user_test_data_output.xlsx",
         nameIndex=4,
-        yearIndex=6,
+        formIndex=6,
         preferencesIndex=7
-    )"""
-    findMissingStudents(
-        r"C:\Users\tom\Downloads\all_students_2026.xls", 
-        data_dir / "user_test_data_output.xlsx",
-        ('7', '8')
     )
+    #findMissingStudents(
+    #    r"C:\Users\tom\Downloads\all_students_2026.xls", 
+    #    data_dir / "user_test_data_output.xlsx",
+    #    ('7', '8')
+    #)
             
 if __name__ == '__main__':
     main()
