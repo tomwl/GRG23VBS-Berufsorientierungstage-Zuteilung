@@ -8,6 +8,7 @@ Created on Fri Jun 26 11:16:22 2026
 import pandas as pd
 import re
 from pathlib import Path
+from difflib import SequenceMatcher
 import workshop as ws
 import student
 
@@ -138,16 +139,82 @@ def processMSFormsData(
             df.to_excel(writer, index=False)
     except ValueError as e:
         print(f"ValueError: writing failed! {e}")
+
+def findMissingStudents(
+        fname_actual: str, 
+        fname_assigned: str, 
+        classes: set):
+    """
+    Go through a file with a list of all students, filter out all students
+    not in the desired year groups (classes)
+
+    Parameters
+    ----------
+    fname_actual : str
+        the nameof the file containing a list of all students in the school.
+    fname_assigned : str
+        the name of the file containing the assigned students.
+    classes: set
+        the desired year groups you want
+
+    Returns
+    -------
+    unassignedStudents : list
+        A list containing the names of the unassigned students.
+
+    """
+    actualStudents = pd.read_excel(fname_actual, keep_default_na=False)  
+    # filter to students in the above classes
+    actualStudents = (
+        actualStudents[actualStudents.klasse.astype(str).str.startswith(classes)]
+    )
+        
+    # set with the (full) names of all actualStudents with no whitespace
+    actualStudentSet = set()
+    for row in actualStudents[["foreName", "longName"]].itertuples(index=False):
+        firstName = re.sub(r"\s+", "", row.foreName.lower())
+        lastName = re.sub(r"\s+", "", row.longName.lower())
+        combinedName = firstName + lastName
+        actualStudentSet.add(combinedName)
+        
+    # get students we already assigned
+    assignedStudents = pd.read_excel(fname_assigned, keep_default_na=False)
+    
+    # organise them into a set that contains names with no whitespace
+    assignedStudentsNoSpaces = {
+        re.sub(r"\s+", "", name)
+        for name in set(list(assignedStudents["Name"]))
+    }
+    
+    # find the unassigned students
+    unassignedStudents = []
+    for person in actualStudentSet:
+        maxMatch = max(
+            SequenceMatcher(
+                a=person,
+                b=s
+            ).ratio() for s in assignedStudentsNoSpaces
+        )
+        if not maxMatch > 0.9:
+            unassignedStudents.append(person)
+    
+    # return the list of students that are in the system but weren't assigned
+    return unassignedStudents
         
         
 def main():      
     data_dir = Path.cwd() / "test_data"
-    processMSFormsData(
+    """processMSFormsData(
         fileInputPath=data_dir / "MS Forms" / "Berufsorientierung-2.xlsx",
         fileOutputPath=data_dir / "user_test_data_output.xlsx",
         nameIndex=4,
         yearIndex=6,
         preferencesIndex=7
+    )"""
+    findMissingStudents(
+        r"C:\Users\tom\Downloads\all_students_2026.xls", 
+        data_dir / "user_test_data_output.xlsx",
+        ('7', '8')
     )
             
 if __name__ == '__main__':
