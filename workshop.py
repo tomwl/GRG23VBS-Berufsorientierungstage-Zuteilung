@@ -52,11 +52,12 @@ class Workshop:
         return len(self.students[slot]) >= self.capacity
     
     def addStudentToSlot(self, student, slot):
+        if self.isSlotFull(slot):
+            raise Exception("Error: workshop slot is full cannot add student")            
         allStudents = [item for sublist in self.students.values() for item in sublist]
         if student not in allStudents:
             self.students[slot].append(student)
         else:
-            # should throw some kind of error here
             raise Exception("Error: workshop already has this student: {0}"
                             .format(student.getName()))
             
