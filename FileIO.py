@@ -143,7 +143,7 @@ def processMSFormsData(
 def findMissingStudents(
         fname_actual: str, 
         fname_assigned: str, 
-        classes: set):
+        classes: tuple):
     """
     Go through a file with a list of all students, filter out all students
     not in the desired year groups (classes)
@@ -154,8 +154,8 @@ def findMissingStudents(
         the nameof the file containing a list of all students in the school.
     fname_assigned : str
         the name of the file containing the assigned students.
-    classes: set
-        the desired year groups you want
+    classes: tuple
+        the desired year groups you want, example ('7', '8')
 
     Returns
     -------
@@ -182,18 +182,22 @@ def findMissingStudents(
     
     # organise them into a set that contains names with no whitespace
     assignedStudentsNoSpaces = {
-        re.sub(r"\s+", "", name)
+        re.sub(r"\s+", "", str(name).lower())
         for name in set(list(assignedStudents["Name"]))
     }
+    # if the assigned file has no entries return all students
+    if not assignedStudentsNoSpaces: 
+        return list(actualStudentSet)
     
     # find the unassigned students
     unassignedStudents = []
     for person in actualStudentSet:
         maxMatch = max(
-            SequenceMatcher(
-                a=person,
-                b=s
-            ).ratio() for s in assignedStudentsNoSpaces
+            (
+                SequenceMatcher(a=person, b=s).ratio()
+                for s in assignedStudentsNoSpaces
+            ),
+            default=0
         )
         if not maxMatch > 0.9:
             unassignedStudents.append(person)
