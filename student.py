@@ -105,7 +105,13 @@ class Student:
         return score
     
     def getLowestPreferenceWorkshop(self):
-        return max(self.workshops, key=self.preferences.index, default = None)
+        if all(item is None for item in self.workshops):
+            return None
+        return max(
+            (workshop for workshop in self.workshops if workshop is not None),
+            key=self.preferences.index,
+            default=None,
+        )
     
     def checkWorkshopsAllDifferent(self):
         return len(set(self.workshops)) == len(self.workshops)

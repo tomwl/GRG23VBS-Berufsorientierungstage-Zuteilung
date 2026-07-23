@@ -25,6 +25,7 @@ class Workshop:
         self.students = {}
         self.capacity = capacity
         self.n_slots = num_slots
+        self.resetStudents()
         
     def __str__(self):
         result = "Name: {0}, \n".format(
