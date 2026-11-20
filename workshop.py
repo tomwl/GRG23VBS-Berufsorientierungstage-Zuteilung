@@ -51,6 +51,9 @@ class Workshop:
     def isSlotFull(self, slot):
         return len(self.students[slot]) >= self.capacity
     
+    def isSlotAlmostFull(self, slot):
+        return len(self.students[slot]) >= self.capacity - 1
+    
     def addStudentToSlot(self, student, slot):
         if self.isSlotFull(slot):
             raise Exception("Error: workshop slot is full cannot add student")            

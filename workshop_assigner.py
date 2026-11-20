@@ -30,17 +30,36 @@ def printNumberOfPeopleInWorkshops(workshops):
 def assignYearGroup(students, unassigned):
     for s in students:
         # loop through and try brute force assignment of workshops to students 
-        slot_counter = 0
         for p in s.preferences:
             if all(x is not None for x in s.workshops):
                 break
-            if not p.isSlotFull(slot_counter):
-                s.assignWorkshop(p, slot_counter)
-                slot_counter += 1
+            if p in s.workshops:
+                continue
+            
+            for slot_counter in range(NUM_SLOTS):
+                if s.workshops[slot_counter] is not None:
+                    continue
+                if not p.isSlotAlmostFull(slot_counter):
+                    s.assignWorkshop(p, slot_counter)
+                    break
         if any(x is None for x in s.workshops):
-            # we have a problem, they have empty slots
-            print("Error, student missing workshop")
-            unassigned.append(s)
+            # we have a problem, student has empty slots
+            # try and add one more kid to an almost full workshop
+            print("Error, student missing workshop, assigning to almost full workshop")
+            for p in s.preferences:
+                if all(x is not None for x in s.workshops):
+                    break
+                if p in s.workshops:
+                    continue
+                for slot_counter in range(NUM_SLOTS):
+                    if s.workshops[slot_counter] is not None:
+                        continue
+                    if not p.isSlotFull(slot_counter):
+                        s.assignWorkshop(p, slot_counter)
+                        break
+            if any(x is None for x in s.workshops):       
+                raise RuntimeError("Error, student missing workshop")
+                #unassigned.append(s)
 
 def assignWorkshops(workshops, students):
     """
@@ -67,7 +86,6 @@ def assignWorkshops(workshops, students):
     # initial assignment is pretty simple, just brute force assign
     assignYearGroup(target_students, unassignedStudents)
     
-    printNumberOfPeopleInWorkshops(workshops)
     print("All 8th years have top 3 choices: {0}"
           .format(checkEigthYearsHaveTopThreeChoices(students)))
     
@@ -133,17 +151,22 @@ def assignWorkshops(workshops, students):
             best_student.assignWorkshop(workshop_to_swap, workshop_to_swap_idx) 
             improvements_counter += 1
             
+    printNumberOfPeopleInWorkshops(workshops)
     #calculate total unhappiness, hopefully better now
     print("Unhappiness after = ", sum(s.unhappiness_score() for s in students))
     print("Number of improvements made = ", improvements_counter)
     
-    # print the results for the unhappiest student                
-    unhappiest = max(students, key=lambda s: s.unhappiness_score())  
-    print("Data for the unhappiest student: ")
-    print("Workshops assigned: ", unhappiest.getWorkshopNames())
-    print("Preferences were:")
-    for p in unhappiest.preferences:
-        print(p.name)
+    # print the results for the unhappiest students                
+    unhappiest = sorted(
+        students,
+        key=lambda x: x.unhappiness_score(),
+        reverse=True
+    )[:10]
+    print("Data for the unhappiest students: ")
+    for student in unhappiest:
+        print("{0} {1}".format(student.name, student.form))
+        result = [student.preferences.index(item)+1 for item in student.workshops]
+        print(result)
     print("All 8th years have top 3 choices: {0}"
           .format(checkEigthYearsHaveTopThreeChoices(students)))
     
@@ -156,10 +179,10 @@ def assignWorkshops(workshops, students):
 
 def main():
     data_dir = Path.cwd() / "test_data"
-    preferenceFile = data_dir / "Workshop_Wuensche_160_Personen.xlsx"
-    workshopsFile = data_dir / "workshop_data-2.xlsx"
-    studentFileOut = data_dir / "test_students_1.xlsx"
-    workshopsFileOut = data_dir / "test_workshops_1.xlsx"
+    preferenceFile = data_dir / "090926_data_output.xlsx"
+    workshopsFile = data_dir / "workshop_data.xlsx"
+    studentFileOut = data_dir / "090926_ergebnisse_students_KAP_19.xlsx"
+    workshopsFileOut = data_dir / "090926_ergebnisse_workshops_KAP_19.xlsx"
     
     fileIO = FileIO.FileIO(
         preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
