@@ -100,8 +100,9 @@ class Student:
         if workshops is None:
             workshops = self.workshops
         for workshop in workshops:
-            rank = self.WEIGHT_MAP[self.preferences.index(workshop)]
-            score += rank
+            if workshop is not None:               
+                rank = self.WEIGHT_MAP[self.preferences.index(workshop)]
+                score += rank
         return score
     
     def getLowestPreferenceWorkshop(self):
