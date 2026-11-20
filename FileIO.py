@@ -204,22 +204,113 @@ def findMissingStudents(
     
     # return the list of students that are in the system but weren't assigned
     return unassignedStudents
+
+def find_unique_key(dictionary, substring):
+    matches = [key for key in dictionary if substring in key]
+
+    if len(matches) != 1:
+        raise ValueError(
+            f"Expected exactly one key containing {substring!r}, "
+            f"found {len(matches)}"
+        )
+
+    return matches[0]
+
+def studienInformationProcessing(
+        fnameData: str, 
+        workshopsOut: str,
+        unisOut: str,
+        nameIdx: int, 
+        formIdx: int, 
+        workshopIdx: int, 
+        uniIdx: int):
+    data = pd.read_excel(fnameData, keep_default_na=False)  
+    workshops = {
+        "ÖH: Studienrecherche": [],
+        "Studieninformation FH Campus": [],
+        "Verein „Grenzenlos“: Auslandsjahr": [],
+        }
+    unis = [{
+        "TU Wien": [],
+        "WU Wien": [],
+        "Juridicum": [],
+        "Medizin": [],
+        "Universität Wien / Pädagogische Hochschule": [],         
+        },
+        {
+        "TU Wien": [],
+        "WU Wien": [],
+        "Juridicum": [],
+        "Medizin": [],
+        "Universität Wien / Pädagogische Hochschule": [],         
+        } 
+        ]
+    
+    for index, row in data.iterrows():
+        name = row.iloc[nameIdx]
+        form = row.iloc[formIdx]
+        workshop = row.iloc[workshopIdx]  
+        unis_in = row.iloc[uniIdx].split(";")
+        unis_in = list(filter(None, unis_in))
         
+        for i in range(2):
+            key = find_unique_key(unis[i], unis_in[i])
+            unis[i][key].append((name, form))
+        
+        key = find_unique_key(workshops, workshop)
+        workshops[key].append((name, form))
+        
+    columns = ['Workshop', 'Name', 'Form']
+    rows = []
+    for key, entries in workshops.items():
+        for name, class_ in entries:
+            rows.append((key, name, class_))
+            
+    try:
+        df = pd.DataFrame(rows, columns=columns)
+        with pd.ExcelWriter(workshopsOut) as writer:
+            df.to_excel(writer, index=False)
+    except ValueError as e:
+        print(f"ValueError: writing failed! {e}")
+        
+    columns = ['Uni', 'Name', 'Form']
+    df = [None, None]
+    for i in range(2):
+        rows = []
+        for key, entries in unis[i].items():
+            for name, class_ in entries:
+                rows.append((key, name, class_))
+        df[i] = pd.DataFrame(rows, columns=columns)
+             
+    with pd.ExcelWriter(unisOut) as writer:
+        for i in range(2):
+            df[i].to_excel(writer, sheet_name=str(i+1), index=False)      
         
 def main():      
     data_dir = Path.cwd() / "test_data"
-    processMSFormsData(
-        fileInputPath=data_dir / "MS Forms" / "Berufsorientierung-3.xlsx",
-        fileOutputPath=data_dir / "user_test_data_output.xlsx",
-        nameIndex=4,
-        formIndex=6,
-        preferencesIndex=7
-    )
-    #findMissingStudents(
-    #    r"C:\Users\tom\Downloads\all_students_2026.xls", 
-    #    data_dir / "user_test_data_output.xlsx",
+    studienInformationProcessing(
+        data_dir / "MS Forms" / "Studieninformation(1-75).xlsx",
+        data_dir / "StudienInformation-Workshops.xlsx",
+        data_dir / "StudienInformation-Unis.xlsx",
+        4,
+        6,
+        7, 
+        8)
+    #processMSFormsData(
+    #    fileInputPath=data_dir / "MS Forms" / "Berufsorientierung(1-171).xlsx",
+    #    fileOutputPath=data_dir / "090926_data_output.xlsx",
+    #    nameIndex=4,
+    #    formIndex=6,
+    #    preferencesIndex=7
+    #)
+    #missing = findMissingStudents(
+    #    r"C:\Users\tom\Downloads\Student_20260909_1641.xls", 
+    #    data_dir / "090926_data_output.xlsx",
     #    ('7', '8')
     #)
+    #print("missing ", len(missing), " students")
+    #for person in missing:
+    #    print(person)
             
 if __name__ == '__main__':
     main()
